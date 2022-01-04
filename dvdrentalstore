@@ -1,0 +1,76 @@
+
+
+Dvd Rental Store
+
+--looking for films which has cheap rental rate but expensive replacement cost
+select COUNT(*) from film
+where replacement_cost>=14.99 and rental_rate<=0.99
+
+-- finding total number of customers by date
+select  date(payment_date), count(customer_id) from payment
+group by date(payment_date)
+order by count(customer_id)
+
+-- finding dates which had more than 100 customers
+select  date(payment_date), count(customer_id) from payment
+group by date(payment_date)
+having count(customer_id)>100
+order by count(customer_id)
+
+--finding customers who have done payment>4.99 between Feb1 and Feb15 and send to their emails voucher for next purchase
+select first_name, last_name, email from payment p
+join customer c
+on p.customer_id=c.customer_id
+where (date(payment_date) between '2001-02-01' and '2007-02-15') 
+and amount>4.99
+
+--Find all movies where actor Nick Wahlberg played
+select title, first_name, last_name from film_actor
+join actor
+on film_actor.actor_id=actor.actor_id
+join film
+on film. film_id=film_actor.film_id
+where first_name like 'Nick' and
+last_name like 'Wahlberg'
+
+-- which months did payments happen, return back full month name
+select distinct(to_char(payment_date, 'MONTH')) from payment
+
+-- how many payments ocurred on Monday
+select count(*) from payment
+where extract(dow from payment_date)=1
+
+--what percentage of replacement cost is rental rate
+select round(rental_rate/replacement_cost, 2) *100 from film
+
+--creating emails with name and surname
+ select lower(left(first_name,1)) || lower(last_name) || '@gmail.com' as customer_email
+ from customer
+
+
+--find films where rental rates are higher than average rental rates
+select title, rental_rate from film 
+where rental_rate>(select avg(rental_rate) from film) 
+
+--find film_id and title where rent return date is between May 29-May30
+select title, film_id from film
+where film_id IN
+(select i.film_id from rental r
+inner join inventory i
+on i.inventory_id=r.inventory_id
+where return_date between '2005-05-29' and '2005-05-30')
+
+--find customers whose payment amount is higher than 11
+select first_name, last_name from customer c
+where exists
+(select * from payment  p
+where p.customer_id=c.customer_id
+and amount>11)
+
+--find pair of films with same length
+select f1.title, f2.title, f1.length
+from film f1
+inner join film f2
+on f1.film_id !=f2.film_id
+and f1.length=f2.length
+
